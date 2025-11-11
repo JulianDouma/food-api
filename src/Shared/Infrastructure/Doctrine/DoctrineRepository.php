@@ -79,10 +79,11 @@ abstract class DoctrineRepository implements RepositoryInterface
     }
 
     /**
-     * @return DoctrineRepository<T>
+     * @return static<T>
      */
-    public function filter(callable $filter): self
+    public function filter(callable $filter): static
     {
+        /** @var static<T> $cloned */
         $cloned = clone $this;
         $filter($cloned->queryBuilder);
 
@@ -91,9 +92,23 @@ abstract class DoctrineRepository implements RepositoryInterface
 
     public function count(): int
     {
-        $paginator = $this->paginator() ?? new Paginator(clone $this->queryBuilder);
+        if (null === $this->page || null === $this->itemsPerPage) {
+            $qb = clone $this->queryBuilder;
+            $qb->select('COUNT(*)');
+            $result = (int) $qb->getQuery()->getSingleScalarResult();
 
-        return \count($paginator);
+            Assert::positiveInteger($result);
+
+            return $result;
+        }
+
+        $paginator = $this->paginator();
+        Assert::notNull($paginator);
+        $result = \count($paginator);
+
+        Assert::positiveInteger($result);
+
+        return $result;
     }
 
     public function query(): QueryBuilder
