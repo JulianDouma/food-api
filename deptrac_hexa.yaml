@@ -1,0 +1,59 @@
+deptrac:
+    paths:
+        - ./src/Shared
+        - ./src/Product
+
+    layers:
+        -   name: Domain
+            collectors:
+                -   type: directory
+                    value: ".+/Domain/.*"
+
+        -   name: Application
+            collectors:
+                -   type: directory
+                    value: ".+/Application/.*"
+
+        -   name: Infrastructure
+            collectors:
+                -   type: directory
+                    value: ".+/Infrastructure/.*"
+
+        -   name: Vendors
+            collectors:
+                -   type: classNameRegex
+                    value: '#^ApiPlatform\\#'
+                -   type: classNameRegex
+                    value: '#^Symfony\\(?!(Component\\Uid\\))#'
+                -   type: classNameRegex
+                    value: '#^Doctrine\\(?!(ORM\\Mapping))#'
+                -   type: classNameRegex
+                    value: '#^Webmozart\\(?!(Assert\\Assert))#'
+
+        -   name: Attributes
+            collectors:
+                -   type: classNameRegex
+                    value: '#^Doctrine\\ORM\\Mapping\\#'
+
+        -   name: Helpers
+            collectors:
+                -   type: classNameRegex
+                    value: '#^Symfony\\Component\\Uid\\#'
+                -   type: classNameRegex
+                    value: '#^Webmozart\\Assert\\Assert#'
+    ruleset:
+        Domain:
+            - Helpers
+            - Attributes
+
+        Application:
+            - Domain
+            - Helpers
+            - Attributes
+
+        Infrastructure:
+            - Domain
+            - Application
+            - Helpers
+            - Attributes
+            - Vendors
